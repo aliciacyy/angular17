@@ -1,0 +1,15 @@
+{
+  "set": "some-example-set",
+  "keys": [
+    {
+      "alg": "ES256",
+      "crv": "P-256",
+      "d": "rcjM7YBkjXewyxx5IMR8bjDdbPUDecvpgF8tRB_-U9Y",
+      "kid": "d40dc76e-0313-4839-90d6-ceda346117b3",
+      "kty": "EC",
+      "use": "sig",
+      "x": "wVU-2g_gwQ46dUiWbgU2K8mLoCnK--Y8iHHoCMw9k74",
+      "y": "v6F2eZFS4D7Tm7fAPa2Ul0mdsq98k1JVe8zKVF6rVug"
+    }
+  ]
+}

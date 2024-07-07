@@ -17,6 +17,9 @@ export class DashboardComponent implements OnInit  {
     this.authService.initSession()
     .then(() => {
       this.username = this.authService.getUserName() ?? '';
+      this.authService.getUserPerms('User', this.authService.getUserId()).then((a) => {
+        console.log(a);
+      });
     })
     .catch(err => console.error(err));
   }

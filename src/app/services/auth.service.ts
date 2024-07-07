@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { FrontendApi, Configuration, Session, Identity } from '@ory/client';
+import { HttpService } from './http.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   // private readonly kratosBaseUrl = 'https://getfromyourown.projects.oryapis.com';
@@ -13,6 +14,8 @@ export class AuthService {
   private ory: FrontendApi;
   private session?: Session;
   private logoutUrl?: string;
+  private token?: string;
+  private httpService = inject(HttpService)
 
   constructor(private http: HttpClient) {
     this.ory = new FrontendApi(
@@ -27,9 +30,13 @@ export class AuthService {
 
   // Initialize the session and get the logout URL
   initSession(): Promise<void> {
-    return this.ory.toSession()
+    return this.ory
+      .toSession({
+        tokenizeAs: 'jwt_example_template1',
+      })
       .then(({ data }) => {
         this.session = data;
+        this.token = this.session.tokenized;
         return this.ory.createBrowserLogoutFlow();
       })
       .then(({ data }) => {
@@ -43,10 +50,12 @@ export class AuthService {
 
   // Check if the user is authenticated
   isAuthenticated(): Observable<boolean> {
-    return this.http.get(`${this.kratosBaseUrl}/sessions/whoami`, { withCredentials: true }).pipe(
-      map(() => true),
-      catchError(() => of(false))
-    );
+    return this.http
+      .get(`${this.kratosBaseUrl}/sessions/whoami`, { withCredentials: true })
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
   // Redirect to Ory login page
@@ -63,6 +72,17 @@ export class AuthService {
 
   // Returns either the email or the username depending on the user's Identity Schema
   getUserName(): string | undefined {
-    return this.session?.identity?.traits.email || this.session?.identity?.traits.username;
+    return (
+      this.session?.identity?.traits.email ||
+      this.session?.identity?.traits.username
+    );
+  }
+
+  getUserId() {
+    return this.session?.identity?.id ?? '';
+  }
+
+  getUserPerms(namespace: string, objectId: string) {
+    return this.httpService.checkRelationTuple(namespace, objectId)
   }
 }
